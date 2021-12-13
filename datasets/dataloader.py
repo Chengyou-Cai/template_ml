@@ -2,7 +2,7 @@ import torchvision as tv
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset,DataLoader
 
-def get_training_dataloader(dataset_class):
+def get_train_dataloader(dataset_class):
     transform = transforms.Compose(
         [
             transforms.RandomCrop(32,padding=4),
@@ -46,4 +46,4 @@ def get_test_dataloader(dataset_class):
     return dataloader   
 
 if __name__=="__main__":
-    loader = get_training_dataloader(tv.datasets.CIFAR10)
+    loader = get_train_dataloader(tv.datasets.CIFAR10)
