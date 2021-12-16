@@ -6,7 +6,9 @@ import torchvision as tv
 from torch import nn,optim
 from models.backbones import resnet
 from datasets.dataloader import *
-from apis.controller import ModelContainer,Controller
+
+from apis.container import ModelContainer
+from apis.controller import Controller
 
 def set_random_seed(seed,deterministic=False):
     random.seed(seed)
@@ -33,9 +35,8 @@ def pipeline():
     model_container = ModelContainer(
         model_name="resnet18_cifar10",
         backbone=backbone,
-        dataset_=tv.datasets.CIFAR10,
-        train_dataloader_getfunc=get_train_dataloader,
-        verify_dataloader_getfunc=get_test_dataloader,
+        train_dataloader=get_train_dataloader(tv.datasets.CIFAR10),
+        test_dataloader=get_test_dataloader(tv.datasets.CIFAR10),
         criterion=criterion,
         optimizer=optimizer,
         scheduler=scheduler,
