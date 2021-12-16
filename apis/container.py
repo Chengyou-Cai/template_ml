@@ -34,6 +34,11 @@ class ModelContainer(object):
         self.criterion = criterion # 判别器
         self.optimizer = optimizer # 优化器
         self.scheduler = scheduler # 计数器
+
+        self.best_state = None
+        self.last_state = None
+        
+        self.load_state = None
     
     def training_one_epoch(self,device,dataloader,epoch=0):
         
@@ -61,6 +66,7 @@ class ModelContainer(object):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
+            # 观察Loss是否收敛
             print(
                 batch_idx, 
                 # len(dataloader),
@@ -72,8 +78,9 @@ class ModelContainer(object):
                     )
                 )
         
-        final_accuracy = 100.*correct/total
-        return final_accuracy
+        average_loss = train_loss/len(dataloader)
+        average_accuracy = 100.*correct/total
+        return average_loss,average_accuracy
     
     def evaluate_one_epoch(self,device,dataloader,epoch=0):
 
@@ -99,6 +106,7 @@ class ModelContainer(object):
                 total += targets.size(0)
                 correct += predicted.eq(targets).sum().item()
 
+                # 观察Loss是否稳定
                 print(
                     batch_idx, 
                     # len(dataloader),
@@ -110,19 +118,43 @@ class ModelContainer(object):
                         )
                     )
         
-        final_accuracy = 100.*correct/total
-        return final_accuracy
+        average_loss = evaluate_loss/len(dataloader)
+        average_accuracy = 100.*correct/total
+        return average_loss,average_accuracy
     
-    def fit(self,device,epochs): # param: controller?
-        # best_accuracy = 0
-        for epoch in range(epochs):
-            self.training_one_epoch(device,self.train_dataloader,epoch)
-            self.evaluate_one_epoch(device,self.verify_dataloader,epoch)
+    def fit(self,device,epochs,start_epoch=0): # param: controller?
+        best_accuracy = 0
+        L, A = 0, 0 
+        for epoch in range(start_epoch,epochs):
+            _, _ = self.training_one_epoch(device,self.train_dataloader,epoch)
+            L, A = self.evaluate_one_epoch(device,self.verify_dataloader,epoch) # delete?
+            
+            if A > best_accuracy:
+                self.best_state = {
+                    "epoch" : epoch,
+                    "param" : self.backbone.state_dict(),
+                    "verify" : {'loss' : L, 'accu' : A},
+                    "version": "best_state"
+                }
+                best_accuracy = A
+            
             self.scheduler.step()
+        
+        self.last_state = {
+            "epoch" : epochs-1,
+            "param" : self.backbone.state_dict(),
+            "verify" : {'loss' : L, 'accu' : A},
+            "version": "last_state"
+        }        
 
     def test(self,device):
-        test_accracy = self.evaluate_one_epoch(device,self.test_dataloader)
-        return test_accracy
+        if self.load_state:
+            self.backbone.load_state_dict(self.load_state)
+        else: 
+            # 若 load_state is None, 则模型将以last_state进行评估
+            assert self.last_state,"last_state 不可为空"
+        L, A = self.evaluate_one_epoch(device,self.test_dataloader)
+        return L, A
 
     def meta_learn(self,device):
         pass    

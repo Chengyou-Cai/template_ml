@@ -14,9 +14,9 @@ class Controller(object):
         self.configs = None
         self.device = None
 
-        self.ckpt_path = r'./models/{}/best_ckpt.pth'.format(self.model.model_name)
+        self.ckpt_dir = r'./models/{}/'.format(self.model.model_name)
 
-    def set_configs(self,configs=None,epochs=15,gpu_id=0):
+    def set_configs(self,configs=None,epochs=1,gpu_id=0):
         if configs:
             self.configs = configs
         else:
@@ -30,30 +30,25 @@ class Controller(object):
         
         print(self.configs)
     
-    def load_checkpoint(self,load_ckpt_path=None):
-        if not load_ckpt_path:
-            load_ckpt_path = self.ckpt_path
-        assert os.path.exists(load_ckpt_path),"ckpt_path doesn't exist"
-        model_ckpt = torch.load(load_ckpt_path)
+    def load_checkpoint(self,load_path=None):
+        if not load_path:
+            load_path = self.ckpt_dir+'save_state.pth'
+        assert os.path.exists(load_path),"ckpt_path doesn't exist"
+        
+        print("--- Load {} ---".format(load_path))
+        state_ckpt = torch.load(load_path)
 
-        self.model.backbone.load_state_dict(model_ckpt['state_'])
-        
+        return state_ckpt
 
-    def save_checkpoint(self,save_ckpt_path=None):
-        if not save_ckpt_path:
-            save_ckpt_path = self.ckpt_path
+    def save_checkpoint(self,state_ckpt,save_path=None):
+        if not save_path:
+            save_path = self.ckpt_dir+'save_state.pth'
         
-        ckpt_dir = os.path.dirname(save_ckpt_path)
-        if not os.path.isdir(ckpt_dir):
-            os.mkdir(ckpt_dir)
+        if not os.path.isdir(self.ckpt_dir):
+            os.mkdir(self.ckpt_dir)
         
-        accuracy = self.model.test(self.device)
-        print("Accuracy:{}%   Saving checkpoint ...".format(accuracy))
-        model_ckpt = {
-            'state_': self.model.backbone.state_dict(),
-            'metric': "Accuracy:{}".format(accuracy)
-        }
-        torch.save(model_ckpt,save_ckpt_path)
+        print("--- Save {} ---".format(save_path))
+        torch.save(state_ckpt,save_path)
 
     def init_model(self):
         if not self.configs:
@@ -66,7 +61,9 @@ class Controller(object):
     
     def train_model(self):
         self.model.fit(self.device,self.configs['epochs'])
-        self.save_checkpoint()
+        self.save_checkpoint(state_ckpt=self.model.best_state,save_path=self.ckpt_dir+'best_state.pth')
+        self.save_checkpoint(state_ckpt=self.model.last_state,save_path=self.ckpt_dir+'last_state.pth')
     
     def test_model(self):
+        self.model.load_state = self.load_checkpoint(load_path=self.ckpt_dir+'best_state.pth')
         self.model.test(self.device)
