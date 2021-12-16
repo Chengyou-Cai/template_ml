@@ -48,10 +48,10 @@ class Controller(object):
             os.mkdir(ckpt_dir)
         
         accuracy = self.model.test(self.device)
-        print("Accuracy:{}. Saving checkpoint ...".format(accuracy))
+        print("Accuracy:{}%   Saving checkpoint ...".format(accuracy))
         model_ckpt = {
             'state_': self.model.backbone.state_dict(),
-            'metric': "Accuracy : {}".format(accuracy)
+            'metric': "Accuracy:{}".format(accuracy)
         }
         torch.save(model_ckpt,save_ckpt_path)
 

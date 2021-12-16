@@ -38,7 +38,7 @@ class ModelContainer(object):
     def training_one_epoch(self,device,dataloader,epoch=0):
         
         assert isinstance(device,torch.device),"DeviceException"
-        print("\nTraining Epoch : {}. Total batches {}".format(epoch,len(dataloader)))
+        print("\n--- Total batches {}, 'Training' Epoch : {} ---".format(len(dataloader),epoch))
 
         self.backbone.train() # train pattern
 
@@ -78,7 +78,7 @@ class ModelContainer(object):
     def evaluate_one_epoch(self,device,dataloader,epoch=0):
 
         assert isinstance(device,torch.device),"DeviceException"
-        print("\nEvaluate Epoch : {}. Total batches {}".format(epoch,len(dataloader)))
+        print("\n--- Total batches {}, 'Evaluate' Epoch : {} ---".format(len(dataloader),epoch))
 
         self.backbone.eval() # evaluate pattern
 
@@ -113,7 +113,8 @@ class ModelContainer(object):
         final_accuracy = 100.*correct/total
         return final_accuracy
     
-    def fit(self,device,epochs):
+    def fit(self,device,epochs): # param: controller?
+        # best_accuracy = 0
         for epoch in range(epochs):
             self.training_one_epoch(device,self.train_dataloader,epoch)
             self.evaluate_one_epoch(device,self.verify_dataloader,epoch)

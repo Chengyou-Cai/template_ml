@@ -42,7 +42,7 @@ def pipeline():
         scheduler=scheduler,
     )
 
-    contorller = Controller(model=model_container)
+    contorller = Controller(model_container=model_container)
     contorller.set_configs(epochs=1,gpu_id=0)
     contorller.init_model()
     contorller.train_model()
