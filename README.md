@@ -24,7 +24,7 @@
 
 ### Part3 : 模型（Model）
 
-* [卷积神经网络（Convolutional Neural Network，CNN）](https://lulaoshi.info/machine-learning/convolutional/two-dimension-convolution-layer)
+* [卷积神经网络（Convolutional Neural Network, CNN）](https://lulaoshi.info/machine-learning/convolutional/two-dimension-convolution-layer)
 * [ResNet](https://zhuanlan.zhihu.com/p/31852747)
   - [残差网络](https://zhuanlan.zhihu.com/p/80226180)
   - [ResNet常见改进及有效性分析](https://zhuanlan.zhihu.com/p/54289848)
